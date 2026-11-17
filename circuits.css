@@ -172,6 +172,8 @@
 
 /* Schrift in der Zeichnung */
 .lia-circuits .lc-text { font-size: 12px; fill: var(--lc-ink); pointer-events: none; }
+/* Rechts-nach-links-Seite (ar, fa, ur): die Zeichnung spiegelt nicht, jede Beschriftung folgt ihrem Inhalt ("4,5 V" bleibt so) */
+.lia-circuits .lc-svg text { direction: ltr; unicode-bidi: plaintext; }
 .lia-circuits .lc-on-dark { fill: #ffffff; font-weight: 700; font-size: 13px; }
 .lia-circuits .lc-sign { font-weight: 700; }
 .lia-circuits .lc-display { font-size: 10.5px; font-family: ui-monospace, "DejaVu Sans Mono", monospace; fill: #16301a; }

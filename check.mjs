@@ -7,6 +7,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import "./circuits-solver.js";
 import "./circuits-parts.js";
+import "./circuits-locale.js";
 
 const LC = globalThis.LiaCircuits;
 
@@ -1694,8 +1695,8 @@ test("@Circuits.code: die Schaltung steht im Codeblock – bauen ohne Strom, Pla
 });
 
 test("Prüfpunkt 4: der Ordner enthält nur einfache Dateien, keinen Build-Schritt", () => {
-  const files = readdirSync(dirname(fileURLToPath(import.meta.url))).sort();
-  assert.deepEqual(files, ["README.md", "check.mjs", "circuits-code.js", "circuits-parts.js", "circuits-solver.js", "circuits-ui.js", "circuits.css"]);
+  const files = readdirSync(dirname(fileURLToPath(import.meta.url))).filter(name => !name.startsWith(".")).sort();
+  assert.deepEqual(files, ["README.md", "check.mjs", "circuits-code.js", "circuits-locale.js", "circuits-parts.js", "circuits-solver.js", "circuits-ui.js", "circuits.css"]);
 });
 
 // ---------------------------------------------------------------- ganzheitlich
@@ -1867,4 +1868,29 @@ test("Potenzial: jede Leitung trägt das Potenzial ihres Knotens, Plus liegt 4,5
   near(at(4, 2) - at(3, 6), 4.5);                          // vom Pluspol zur Lampe gegenüber der Rückleitung
   assert.ok(Math.abs(at(8, 2) - at(4, 2)) < 0.01);         // geschlossener Schalter: fast kein Unterschied
   assert.equal(LC.normalize(LC.serialize(LC.normalize({ potential: true }))).potential, true);
+});
+
+test("Sprachen: alle Sprachen von lia-localization, gleiche Schlüssel, Platzhalter und Dezimalzeichen", () => {
+  const keys = Object.keys(LC.strings.en);
+  assert.equal(LC.languages.length, 45);
+  assert.deepEqual(Object.keys(LC.strings).sort(), LC.languages);
+  for (const lang of LC.languages) {
+    const table = LC.strings[lang];
+    assert.deepEqual(Object.keys(table), keys, lang);
+    for (const key of keys) {
+      assert.ok(typeof table[key] === "string" && table[key].trim(), lang + "." + key);
+      if (LC.strings.en[key].includes("{n}")) assert.ok(table[key].includes("{n}"), lang + "." + key);
+    }
+  }
+  assert.equal(LC.lang("de-AT"), "de");
+  assert.equal(LC.lang("zh-TW"), "tw");
+  assert.equal(LC.lang("zh-Hant-HK"), "tw");
+  assert.equal(LC.lang("zh-CN"), "zh");
+  assert.equal(LC.lang("no"), "nb");
+  assert.equal(LC.lang("pt_BR"), "pt");
+  assert.equal(LC.lang("xx"), "");                                // keine eigene Übersetzung: Englisch, der Übersetzer darf
+  assert.equal(LC.format(4.5, "V", "fr"), "4,50 V");
+  assert.equal(LC.format(4.5, "V", "ja"), "4.50 V");
+  assert.equal(LC.format(4.5, "V", "ar"), "4.50 V");            // westliche Ziffern, wie im Text der Sprachdatei
+  assert.equal(LC.text("battery", "xx"), "Battery");            // unbekannt oder noch nicht geladen: Englisch
 });

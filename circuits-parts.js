@@ -20,7 +20,7 @@
 
   // ---------------------------------------------------------------- Texte
 
-  LC.strings = {
+  LC.strings = Object.assign(LC.strings || {}, {
     de: {
       // ­ ist ein weiches Trennzeichen: lange Namen brechen in der Bauteilleiste an dieser Stelle um
       battery: "Batterie", source: "Spannungs­quelle", switch: "Schalter", button: "Taster", changeover: "Umschalter",
@@ -127,11 +127,37 @@
       wave: "Waveform", sine: "Sine", square: "Square", triangle: "Triangle", peak: "Peak voltage",
       channels: "Channels", oneChannel: "1 channel", twoChannels: "2 channels", modeW: "Power (W)"
     }
-  };
+  });
 
   LC.text = function (key, lang) {
-    var table = LC.strings[lang] || LC.strings.de;
+    var table = LC.strings[lang] || LC.strings.en;
     return table[key] !== undefined ? table[key] : (LC.strings.en[key] !== undefined ? LC.strings.en[key] : key);
+  };
+
+  // ---------------------------------------------------------------- Sprachen
+  // Alle Sprachen von LiaScript (github.com/LiaScript/lia-localization). Deutsch und Englisch stehen oben,
+  // die übrigen in circuits-locale.js. (Nachladen geht nicht: LiaScript lädt Skripte als blob:, ihr Ort ist unbekannt.)
+  LC.languages = ["am", "ar", "bg", "bn", "ca", "cs", "da", "de", "el", "en", "es", "et", "eu", "fa", "fi", "fr", "ga",
+    "hi", "hr", "hu", "hy", "it", "ja", "ka", "ko", "lt", "lv", "ms", "nb", "nl", "pa", "pl", "pt", "ro", "ru", "sk",
+    "sl", "sq", "sv", "sw", "tr", "tw", "uk", "ur", "zh"];
+
+  /** Sprachangabe der Seite (lang von <html>) als Code von LiaScript: "de-AT" → "de", "zh-TW" → "tw"
+   *  (in lia-localization ist tw traditionelles Chinesisch), "no" → "nb"; nicht dabei → "". */
+  LC.lang = function (tag) {
+    var l = String(tag || "").toLowerCase().replace(/_/g, "-"), main = l.split("-")[0];
+    if (main === "zh" && /-(tw|hk|mo|hant)\b/.test(l)) main = "tw";
+    if (main === "no" || main === "nn") main = "nb";
+    return LC.languages.indexOf(main) >= 0 ? main : "";
+  };
+
+  var decimals = {};
+  /** Dezimalzeichen der Sprache bei westlichen Ziffern: "de" → ",", "en" → "." */
+  LC.decimal = function (lang) {
+    if (!(lang in decimals)) {
+      try { decimals[lang] = new Intl.NumberFormat((lang === "tw" ? "zh-TW" : lang) + "-u-nu-latn").formatToParts(1.5)[1].value; }
+      catch (e) { decimals[lang] = lang === "en" ? "." : ","; }
+    }
+    return decimals[lang];
   };
 
   // ---------------------------------------------------------------- Zahlen
@@ -150,7 +176,7 @@
     var v = x / step[0], a = Math.abs(v);
     var s = v.toFixed(a >= 100 ? 0 : a >= 10 ? 1 : 2);
     if (short && s.indexOf(".") >= 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
-    if (lang !== "en") s = s.replace(".", ",");
+    s = s.replace(".", LC.decimal(lang));
     return s.replace("-", "−") + " " + step[1] + unit;
   };
 
@@ -571,7 +597,7 @@
   /** Zahl ohne Vorsatz, höchstens drei Stellen: 0.5 → "0,5". */
   function plain(x, lang) {
     var s = String(+x.toPrecision(3));
-    return lang !== "en" ? s.replace(".", ",") : s;
+    return s.replace(".", LC.decimal(lang));
   }
 
   P.acsource = {

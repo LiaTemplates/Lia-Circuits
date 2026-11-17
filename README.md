@@ -1,12 +1,13 @@
 <!--
 author:   LiaAgent
-version:  0.0.1
+version:  0.1.0
 language: de
 narrator: Deutsch Female
 comment:  Elektrische Schaltungen aufbauen, umbauen und messen – in 2D mit SVG, mit Bildern oder Schaltzeichen.
 
 script:   ./circuits-solver.js
           ./circuits-parts.js
+          ./circuits-locale.js
           ./circuits-ui.js
           ./circuits-code.js
 
@@ -58,7 +59,9 @@ Es gibt zwei Ansichten zum Umschalten: **Bilder** der Bauteile und **Schaltzeich
 
 Einbinden im Kopf des Kurses:
 
-`import: ./lia-templates/circuits/README.md`
+`import: https://raw.githubusercontent.com/LiaTemplates/Lia-Circuits/0.1.0/README.md` (feste Version)
+
+`import: https://raw.githubusercontent.com/LiaTemplates/Lia-Circuits/master/README.md` (immer die neueste)
 
 > **Stand:** 30 Bauteile und Messgeräte – Batterie (in vier Bauformen), Spannungsquelle, Wechselspannungsquelle, Signalgenerator, Solarzelle, Handgenerator, Schalter, Taster, Umschalter, Relais, Lampe, Leuchtdiode, Motor, Summer, Lautsprecher, Elektromagnet, Widerstand, Schiebewiderstand, Fotowiderstand, Heißleiter, Kondensator, Spule, Diode, Transistor, Sicherung, Multimeter, Voltmeter, Amperemeter, Leistungsmesser und Oszilloskop (mit einem oder zwei Kanälen). Für den Unterricht gibt es Aufgaben mit Selbstkontrolle, eine eingeschränkte Leiste, gesperrte Schaltungen, die Fehlersuche und eine Messwerttabelle. Alles lässt sich auch mit dem Finger bedienen. Mit `@Circuits.code` wird die Schaltung gespeichert, mit Versionen und im Klassenraum.
 
@@ -826,6 +829,14 @@ Ein leerer Block ergibt eine leere Fläche zum freien Bauen.
 ```json @Circuits.sim
 {"view":"picture"}
 ```
+
+## Sprachen
+
+Die Arbeitsfläche spricht die Sprache des Kurses (`language:` im Kopf) – in allen 45 Sprachen von LiaScript ([lia-localization](https://github.com/LiaScript/lia-localization)): am, ar, bg, bn, ca, cs, da, de, el, en, es, et, eu, fa, fi, fr, ga, hi, hr, hu, hy, it, ja, ka, ko, lt, lv, ms, nb, nl, pa, pl, pt, ro, ru, sk, sl, sq, sv, sw, tr, tw, uk, ur, zh. Auch Zahlen erscheinen in der Schreibweise der Sprache (4,5 V oder 4.5 V).
+
+Wechselt die Sprache der Seite von außen – mit dem Google Übersetzer, der Übersetzung des Browsers oder der Übersetzung in LiaScript –, baut sich jede sichtbare Fläche sofort in der neuen Sprache auf; die Schaltung bleibt, wie sie ist. Die Fläche übersetzt sich dann selbst, der Übersetzer lässt sie aus. Nur eine Sprache, die nicht in der Liste steht, erscheint auf Englisch und wird dem Übersetzer überlassen.
+
+Die Texte stehen in `circuits-parts.js` (Deutsch, Englisch) und `circuits-locale.js` (alle übrigen); die Übersetzungen sind maschinell erstellt – Verbesserungen sind willkommen.
 
 ## Die Beschreibung der Schaltung
 

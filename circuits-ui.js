@@ -15,10 +15,22 @@
   LC.store = LC.store || {};           // Zustand je Arbeitsfläche – überlebt den Folienwechsel
 
   function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+  /** Sprache der Seite als Code von LiaScript; ohne Angabe Deutsch, "" für eine Sprache ohne eigene Übersetzung. */
   function language() {
-    var l = (typeof document !== "undefined" && document.documentElement.lang) || "de";
-    return String(l).toLowerCase().indexOf("de") === 0 ? "de" : "en";
+    var l = typeof document !== "undefined" && document.documentElement.lang;
+    return l ? LC.lang(l) : "de";
   }
+
+  // Sprachwechsel von außen: LiaScript, Google Übersetzer oder die Übersetzung des Browsers setzen lang an <html>.
+  // Dann werden alle sichtbaren Flächen in der neuen Sprache neu gebaut; ihr Zustand bleibt (LC.store).
+  var mounted = [];
+  function relocalize() {
+    var lang = language();
+    mounted = mounted.filter(function (el) { return el.isConnected && el._lc; });
+    mounted.forEach(function (el) { if (el._lc.lang !== lang) el._lc.remount(); });   // "" (keine eigene) zählt für sich
+  }
+  if (typeof MutationObserver !== "undefined" && typeof document !== "undefined")
+    new MutationObserver(relocalize).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
   /** Geschwindigkeit der wandernden Punkte in Pixel je Sekunde, mit Vorzeichen. */
   function speedOf(current) {
     var a = Math.abs(current);
@@ -33,8 +45,13 @@
     var onChange = options && options.onChange, paused = options && options.paused;
     if (!el) return;
     if (el._lc) el._lc.stop();                           // dasselbe Element wird neu aufgebaut
-    var lang = language(), esc = LC.escape;
+    var lang = language(), own = !!LC.strings[lang], esc = LC.escape;
+    if (!own) lang = "en";
     function T(key) { return LC.text(key, lang); }
+    if (mounted.indexOf(el) < 0) mounted.push(el);
+    // Mit eigener Übersetzung übersetzt Google die Fläche nicht noch einmal; ohne sie (Englisch) darf er.
+    if (own) { el.setAttribute("translate", "no"); el.classList.add("notranslate"); }
+    else { el.removeAttribute("translate"); el.classList.remove("notranslate"); }
 
     var st = LC.store[el.id];
     if (!st) {
@@ -1148,6 +1165,8 @@
     TOUCH.forEach(function (type) { el.addEventListener(type, onTouch, { passive: true }); });
 
     el._lc = {
+      lang: own ? lang : "",
+      remount: function () { mount(el, source, options); },
       refresh: renderAll,
       stop: function () {
         stopped = true;
